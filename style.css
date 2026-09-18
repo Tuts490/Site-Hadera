@@ -1226,114 +1226,436 @@ textarea {
 
 }
 
-/* ========================================
+/* ==========================================
    OUTROS SEGUROS
-======================================== */
+========================================== */
 
 .other-insurances {
-    padding: 100px 0;
+    padding: 110px 0 80px;
 
-    background-color: var(--light-gray);
+    background: #f7f8fa;
+
+    overflow: hidden;
 }
 
 
-/* ========================================
-   GRID
-======================================== */
+/* ==========================================
+   TÍTULO
+========================================== */
 
-.insurance-grid {
-    display: grid;
+.section-heading {
+    text-align: center;
 
-    grid-template-columns: repeat(3, 1fr);
-
-    gap: 18px;
+    margin-bottom: 50px;
 }
 
 
-/* ========================================
-   CARD
-======================================== */
+.section-label {
+    display: block;
+
+    margin-bottom: 12px;
+
+    color: var(--red);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    letter-spacing: 2px;
+}
+
+
+.section-heading h2 {
+    margin: 0;
+
+    color: var(--dark);
+
+    font-size: clamp(34px, 4vw, 48px);
+
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    letter-spacing: -1px;
+}
+
+
+/* ==========================================
+   CARROSSEL
+========================================== */
+
+.insurance-carousel {
+    width: 100%;
+    overflow: hidden;
+}
+
+.insurance-track {
+    display: flex;
+    gap: 22px;
+    transition: transform 0.5s ease;
+    will-change: transform;
+}
 
 .insurance-card {
-    min-height: 130px;
+    position: relative;
+
+    flex: 0 0 calc((100% - 44px) / 3);
+
+    height: 270px;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: #222;
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.12);
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+
+/* ==========================================
+   CARD
+========================================== */
+
+.insurance-card {
+    position: relative;
+
+    height: 270px;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: #222;
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.12);
+
+    transition: transform 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+
+.insurance-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* ==========================================
+   IMAGEM
+========================================== */
+
+.insurance-card img {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: transform 0.5s ease;
+}
+
+
+.insurance-card:hover img {
+    transform: scale(1.05);
+}
+
+
+/* ==========================================
+   OVERLAY
+========================================== */
+
+.insurance-card-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(8, 25, 50, 0.25) 0%,
+            rgba(8, 25, 50, 0.55) 45%,
+            rgba(8, 25, 50, 0.92) 100%
+        );
+}
+
+
+/* ==========================================
+   CONTEÚDO
+========================================== */
+
+.insurance-card-content {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    padding: 28px 30px;
+}
+
+
+/* ==========================================
+   TAG
+========================================== */
+
+.insurance-tag {
+    align-self: flex-start;
+
+    margin-bottom: 12px;
+
+    padding: 6px 13px;
+
+    border-radius: 20px;
+
+    background: var(--red);
+
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* ==========================================
+   TÍTULO DO CARD
+========================================== */
+
+.insurance-card h3 {
+    margin: 0 0 8px;
+
+    color: #ffffff;
+
+    font-size: 25px;
+
+    line-height: 1.1;
+
+    font-weight: 800;
+}
+
+
+/* ==========================================
+   DESCRIÇÃO
+========================================== */
+
+.insurance-card p {
+    max-width: 320px;
+
+    margin: 0 0 18px;
+
+    color: rgba(255, 255, 255, 0.88);
+
+    font-size: 14px;
+
+    line-height: 1.45;
+}
+
+
+/* ==========================================
+   BOTÃO
+========================================== */
+
+.insurance-button {
+    align-self: flex-start;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 11px 18px;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: var(--dark);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: all 0.3s ease;
+}
+
+
+.insurance-button:hover {
+    background: var(--red);
+
+    color: #ffffff;
+
+    transform: translateX(3px);
+}
+
+
+/* ==========================================
+   DOTS
+========================================== */
+
+.carousel-dots {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 9px;
+
+    margin-top: 28px;
+}
+
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+
+    padding: 0;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background: #dce2eb;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+
+.carousel-dot.active {
+    width: 25px;
+
+    border-radius: 20px;
+
+    background: var(--red);
+}
+
+/*===========================================
+ SETAS
+===========================================*/
+.insurance-carousel {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+
+    width: 46px;
+    height: 46px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--red);
+
+    font-size: 24px;
+    font-weight: bold;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    padding: 25px;
+    cursor: pointer;
 
-    background-color: var(--white);
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
 
-    border: 1px solid #E8E8E8;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        opacity 0.2s ease;
+}
 
-    border-radius: 14px;
+.carousel-arrow:hover {
+    background: var(--red);
+    color: var(--white);
+    transform: translateY(-50%) scale(1.08);
+}
 
-    text-align: center;
+.carousel-prev {
+    left: 15px;
+}
 
-    transition: var(--transition);
+.carousel-next {
+    right: 15px;
+}
+
+.carousel-arrow:disabled {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
 }
 
 
-.insurance-card:hover {
-    transform: translateY(-4px);
 
-    border-color: rgba(192, 39, 45, 0.25);
-
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-}
-
-
-.insurance-card h3 {
-    color: var(--dark);
-
-    font-size: 18px;
-
-    font-weight: 600;
-
-    transition: var(--transition);
-}
-
-
-.insurance-card:hover h3 {
-    color: var(--red);
-}
-
-
-/* ========================================
+/* ==========================================
    RESPONSIVIDADE
-======================================== */
-
-@media (max-width: 800px) {
-
-    .other-insurances {
-        padding: 75px 0;
-    }
-
-
-    .insurance-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-}
-
-
-@media (max-width: 500px) {
-
-    .other-insurances {
-        padding: 65px 0;
-    }
-
-
-    .insurance-grid {
-        grid-template-columns: 1fr;
-    }
-
+========================================== */
+@media (max-width: 900px) {
 
     .insurance-card {
-        min-height: 100px;
+        flex: 0 0 calc((100% - 22px) / 2);
     }
 
+}
+
+
+@media (max-width: 600px) {
+
+    .other-insurances {
+        padding: 80px 0 60px;
+    }
+
+    .section-heading {
+        margin-bottom: 35px;
+    }
+
+    .section-heading h2 {
+        font-size: 32px;
+    }
+
+    .insurance-card {
+        flex: 0 0 100%;
+        height: 330px;
+    }
+
+    .insurance-card-content {
+        padding: 24px;
+    }
+
+}
+
+.carousel-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+}
+
+.carousel-prev {
+    left: 10px;
+}
+
+.carousel-next {
+    right: 10px;
 }
 
 /* ========================================
