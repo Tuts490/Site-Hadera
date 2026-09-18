@@ -807,10 +807,238 @@ textarea {
 
 .reviews {
     padding: 110px 0;
-
-    background-color: var(--light-gray);
+    background-color: var(--red);
+    color: var(--white);
+    overflow: hidden;
 }
 
+.reviews .section-label {
+    color: #fff;
+}
+
+.reviews .section-header h2 {
+    color: var(--white);
+}
+
+/* ========================================
+   CARROSSEL
+======================================== */
+
+.reviews-carousel {
+    overflow: hidden;
+    margin-bottom: 45px;
+}
+
+.reviews-track {
+    display: flex;
+    gap: 24px;
+    transition: transform 0.5s ease;
+    will-change: transform;
+}
+
+/* Card */
+.review-card {
+    flex: 0 0 calc((100% - 48px) / 3);
+    display: flex;
+    flex-direction: column;
+
+    padding: 32px 30px;
+
+    background-color: #232D42;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(229, 185, 74, 0.55);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Foco acessível (navegação por teclado) */
+.review-card:focus-visible {
+    outline: 3px solid rgba(229, 185, 74, 0.6);
+    outline-offset: 3px;
+}
+
+/* Pequeno ícone indicando "abre no Google" */
+.review-card::after {
+    content: "Ver no Google ↗";
+    margin-top: 18px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #000;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.review-card:hover::after {
+    opacity: 1;
+    transform: translateX(3px);
+}
+
+/* Estrelas */
+.review-card .review-stars {
+    margin-bottom: 18px;
+    color: #E5B94A;
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+/* Texto */
+.review-card .review-text {
+    flex: 1;
+    margin-bottom: 28px;
+    color: #000;
+    font-size: 15px;
+    font-style: italic;
+    line-height: 1.75;
+}
+
+/* Autor */
+.review-author {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.review-avatar {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--red);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.review-author-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4;
+}
+
+.review-author-info strong {
+    color: #000000;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.review-author-info span {
+    color: #000000;
+    font-size: 13px;
+}
+
+/* ========================================
+   NAVEGAÇÃO (SETAS)
+======================================== */
+
+.reviews-nav {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+
+.reviews-nav button {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    background-color: transparent;
+    color: #C9D2E0;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
+}
+
+.reviews-nav button:hover:not(:disabled) {
+    background-color: #fff;
+    border-color: #fff;
+    color: #1a2233;
+}
+
+.reviews-nav button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+======================================== */
+
+@media (max-width: 1000px) {
+
+    .review-card {
+        flex: 0 0 calc((100% - 24px) / 2);
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .reviews {
+        padding: 75px 0;
+    }
+
+    .review-card {
+        flex: 0 0 100%;
+        padding: 26px 22px;
+    }
+
+    .reviews-nav button {
+        width: 40px;
+        height: 40px;
+    }
+
+}
+/* ========================================
+   RESPONSIVIDADE
+======================================== */
+
+@media (max-width: 1000px) {
+
+    .reviews-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .reviews {
+        padding: 75px 0;
+    }
+
+    .reviews-list {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        margin-bottom: 40px;
+    }
+
+    .review-card {
+        padding: 26px 22px;
+    }
+
+    .reviews-nav button {
+        width: 40px;
+        height: 40px;
+    }
+
+}
 
 /* ========================================
    CONTEÚDO DAS AVALIAÇÕES
