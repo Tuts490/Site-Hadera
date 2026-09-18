@@ -2501,3 +2501,134 @@ textarea:focus-visible {
     margin-top: 20px;
     width: 200px;
 }
+
+/* ========================================
+   BOTÃO WHATSAPP FLUTUANTE
+======================================== */
+
+.whatsapp-float {
+    position: fixed;
+
+    right: 24px;
+    bottom: 24px;
+
+    width: 60px;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #25D366;
+    color: #FFFFFF;
+
+    border-radius: 50%;
+
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
+
+    z-index: 9999;
+
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+/* Ícone */
+
+.whatsapp-float svg {
+    width: 32px;
+    height: 32px;
+
+    fill: currentColor;
+}
+
+
+/* Hover */
+
+.whatsapp-float:hover {
+    transform: scale(1.08);
+
+    box-shadow: 0 10px 28px rgba(37, 211, 102, 0.6);
+}
+
+
+/* Foco acessível (teclado) */
+
+.whatsapp-float:focus-visible {
+    outline: 3px solid rgba(37, 211, 102, 0.5);
+
+    outline-offset: 4px;
+}
+
+
+/* ========================================
+   ANIMAÇÃO DE PULSO (OPCIONAL)
+======================================== */
+
+.whatsapp-float::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    border-radius: 50%;
+
+    background-color: #25D366;
+
+    opacity: 0.6;
+
+    z-index: -1;
+
+    animation: whatsapp-pulse 2s ease-out infinite;
+}
+
+
+@keyframes whatsapp-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+
+/* ========================================
+   RESPONSIVIDADE
+======================================== */
+
+@media (max-width: 600px) {
+
+    .whatsapp-float {
+        right: 16px;
+        bottom: 16px;
+
+        width: 54px;
+        height: 54px;
+    }
+
+
+    .whatsapp-float svg {
+        width: 28px;
+        height: 28px;
+    }
+
+}
+
+
+/* Respeita usuários que preferem menos animação */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .whatsapp-float::before {
+        animation: none;
+    }
+
+}
