@@ -1,45 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // ==========================================
-    // CARROSSEL DE SEGUROS
-    // ==========================================
+    /* ==========================================
+       CARROSSEL DE SEGUROS
+    ========================================== */
 
-    const carousel = document.querySelector(".insurance-carousel");
-    const track = document.querySelector(".insurance-track");
-    const cards = document.querySelectorAll(".insurance-card");
-    const dotsContainer = document.querySelector(".carousel-dots");
-    const prevButton = document.querySelector(".carousel-prev");
-    const nextButton = document.querySelector(".carousel-next");
+    const insuranceCarousel = document.querySelector(".insurance-carousel");
+    const insuranceTrack = document.querySelector(".insurance-track");
+    const insuranceCards = document.querySelectorAll(".insurance-card");
+    const insuranceDots = document.querySelector(".carousel-dots");
+    const insurancePrev = document.querySelector(".carousel-prev");
+    const insuranceNext = document.querySelector(".carousel-next");
 
-    if (carousel && track && cards.length > 0 && dotsContainer) {
+    if (
+        insuranceCarousel &&
+        insuranceTrack &&
+        insuranceCards.length > 0 &&
+        insuranceDots &&
+        insurancePrev &&
+        insuranceNext
+    ) {
 
         let currentPage = 0;
 
         function getCardsPerPage() {
-            if (window.innerWidth <= 600) {
-                return 1;
-            }
-
-            if (window.innerWidth <= 900) {
-                return 2;
-            }
-
+            if (window.innerWidth <= 600) return 1;
+            if (window.innerWidth <= 900) return 2;
             return 3;
         }
 
         function getTotalPages() {
-            return Math.ceil(
-                cards.length / getCardsPerPage()
-            );
+            return Math.ceil(insuranceCards.length / getCardsPerPage());
         }
-
-        // ==========================================
-        // CRIAR BOLINHAS
-        // ==========================================
 
         function createDots() {
 
-            dotsContainer.innerHTML = "";
+            insuranceDots.innerHTML = "";
 
             const totalPages = getTotalPages();
 
@@ -50,266 +45,220 @@ document.addEventListener("DOMContentLoaded", () => {
                 dot.type = "button";
                 dot.classList.add("carousel-dot");
 
-                dot.setAttribute(
-                    "aria-label",
-                    `Ir para página ${i + 1}`
-                );
+                dot.setAttribute("aria-label", `Ir para página ${i + 1}`);
 
                 if (i === currentPage) {
                     dot.classList.add("active");
                 }
 
                 dot.addEventListener("click", () => {
-
                     currentPage = i;
-
-                    updateCarousel();
-
+                    updateInsuranceCarousel();
                 });
 
-                dotsContainer.appendChild(dot);
+                insuranceDots.appendChild(dot);
             }
         }
 
-        // ==========================================
-        // MOVER CARROSSEL
-        // ==========================================
-
-        function updateCarousel() {
+        function updateInsuranceCarousel() {
 
             const cardsPerPage = getCardsPerPage();
 
-            if (cards.length === 0) {
-                return;
-            }
+            if (insuranceCards.length === 0) return;
 
-            const cardWidth =
-                cards[0].getBoundingClientRect().width;
+            const cardWidth = insuranceCards[0].getBoundingClientRect().width;
 
-            const gap = 22;
+            const trackStyle = window.getComputedStyle(insuranceTrack);
+            const gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 22;
 
-            const moveAmount =
-                (cardWidth + gap) *
-                cardsPerPage *
-                currentPage;
+            const moveAmount = (cardWidth + gap) * cardsPerPage * currentPage;
 
-            track.style.transform =
-                `translateX(-${moveAmount}px)`;
+            insuranceTrack.style.transform = `translateX(-${moveAmount}px)`;
 
-            prevButton.disabled = currentPage === 0;
-            nextButton.disabled = currentPage === getTotalPages() - 1;
-            prevButton.addEventListener("click", () => {
-                if (currentPage > 0) {
-                    currentPage--;
-                    updateCarousel();
-                }
-            });
+            insurancePrev.disabled = currentPage === 0;
+            insuranceNext.disabled = currentPage >= getTotalPages() - 1;
 
-            nextButton.addEventListener("click", () => {
-                if (currentPage < getTotalPages() - 1) {
-                    currentPage++;
-                    updateCarousel();
-                }
-            });
-
-            // Atualiza bolinhas
-
-            const dots =
-                dotsContainer.querySelectorAll(".carousel-dot");
+            const dots = insuranceDots.querySelectorAll(".carousel-dot");
 
             dots.forEach((dot, index) => {
-
-                dot.classList.toggle(
-                    "active",
-                    index === currentPage
-                );
-
+                dot.classList.toggle("active", index === currentPage);
             });
         }
 
-        // ==========================================
-        // INICIALIZA
-        // ==========================================
+        // Event listeners adicionados UMA vez
+        insurancePrev.addEventListener("click", () => {
+            if (currentPage > 0) {
+                currentPage--;
+                updateInsuranceCarousel();
+            }
+        });
 
+        insuranceNext.addEventListener("click", () => {
+            if (currentPage < getTotalPages() - 1) {
+                currentPage++;
+                updateInsuranceCarousel();
+            }
+        });
+
+        // Inicializa
         createDots();
-        updateCarousel();
+        updateInsuranceCarousel();
 
-        // ==========================================
-        // REDIMENSIONAMENTO
-        // ==========================================
-
+        // Redimensionamento
         window.addEventListener("resize", () => {
 
             const totalPages = getTotalPages();
 
             if (currentPage >= totalPages) {
-                currentPage = totalPages - 1;
+                currentPage = Math.max(0, totalPages - 1);
             }
 
             createDots();
-            updateCarousel();
-
+            updateInsuranceCarousel();
         });
     }
 
 
-    // ==========================================
-    // ANO AUTOMÁTICO DO FOOTER
-    // ==========================================
+    /* ==========================================
+       ANO AUTOMÁTICO DO FOOTER
+    ========================================== */
 
-    const currentYear =
-        document.querySelector("#current-year");
+    const currentYear = document.querySelector("#current-year");
 
     if (currentYear) {
-        currentYear.textContent =
-            new Date().getFullYear();
+        currentYear.textContent = new Date().getFullYear();
     }
 
 
-    // ==========================================
-    // FORMULÁRIO DE CONTATO
-    // ==========================================
+    /* ==========================================
+   FORMULÁRIO DE CONTATO
+   Envia nome, e-mail e mensagem para o e-mail
+   do corretor via Formspree.
+========================================== */
 
-    const contactForm =
-        document.querySelector("#contact-form");
+    const contactForm = document.querySelector("#contact-form");
 
     if (contactForm) {
 
-        contactForm.addEventListener("submit", (event) => {
+        // ⚠️ SUBSTITUA pelo seu endpoint do Formspree
+        // Exemplo: "https://formspree.io/f/xabcdefg"
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/mrpbqgpo";
+
+        // Para onde enviar (usado apenas como fallback via mailto)
+        const CORRETOR_EMAIL = "vendas@hadera.com.br";
+
+        const submitBtn = contactForm.querySelector("button[type='submit']");
+        const submitBtnOriginalHTML = submitBtn ? submitBtn.innerHTML : "";
+
+        // Cria elemento de feedback (sucesso/erro) se não existir
+        let feedback = contactForm.querySelector(".form-feedback");
+        if (!feedback) {
+            feedback = document.createElement("div");
+            feedback.className = "form-feedback";
+            contactForm.appendChild(feedback);
+        }
+
+        function showFeedback(message, type) {
+            feedback.textContent = message;
+            feedback.classList.remove("success", "error");
+            feedback.classList.add("visible", type);
+        }
+
+        function hideFeedback() {
+            feedback.classList.remove("visible", "success", "error");
+        }
+
+        contactForm.addEventListener("submit", async (event) => {
 
             event.preventDefault();
+            hideFeedback();
 
-            const nome =
-                document.querySelector("#nome").value.trim();
+            const nomeInput = contactForm.querySelector("#nome");
+            const emailInput = contactForm.querySelector("#email");
+            const mensagemInput = contactForm.querySelector("#mensagem");
 
-            const email =
-                document.querySelector("#email").value.trim();
+            const nome = nomeInput.value.trim();
+            const email = emailInput.value.trim();
+            const mensagem = mensagemInput.value.trim();
 
-            const telefone =
-                document.querySelector("#telefone").value.trim();
+            // Validações
+            if (!nome || !email || !mensagem) {
+                showFeedback("Por favor, preencha todos os campos.", "error");
+                return;
+            }
 
-            const seguro =
-                document.querySelector("#seguro").value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showFeedback("Digite um e-mail válido.", "error");
+                emailInput.focus();
+                return;
+            }
 
-            const mensagem =
-                document.querySelector("#mensagem").value.trim();
+            // Estado de carregamento
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = "Enviando...";
+            }
 
+            try {
 
-            if (
-                !nome ||
-                !email ||
-                !telefone ||
-                !seguro ||
-                !mensagem
-            ) {
+                const response = await fetch(FORMSPREE_ENDPOINT, {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        nome: nome,
+                        email: email,
+                        mensagem: mensagem,
+                        _subject: `Nova mensagem do site — ${nome}`
+                    })
+                });
 
-                alert(
-                    "Por favor, preencha todos os campos."
+                if (response.ok) {
+                    showFeedback(
+                        "Mensagem enviada! Entraremos em contato em breve.",
+                        "success"
+                    );
+                    contactForm.reset();
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    const msg = data?.errors?.[0]?.message
+                        || "Não foi possível enviar. Tente novamente.";
+                    showFeedback(msg, "error");
+                }
+
+            } catch (error) {
+                // Fallback: abre o cliente de e-mail com tudo preenchido
+                const subject = encodeURIComponent(`Contato pelo site — ${nome}`);
+                const body = encodeURIComponent(
+                    `Nome: ${nome}\nE-mail: ${email}\n\n${mensagem}`
                 );
 
-                return;
+                showFeedback(
+                    "Sem conexão. Abrindo seu e-mail para enviar a mensagem...",
+                    "error"
+                );
+
+                window.location.href = `mailto:${CORRETOR_EMAIL}?subject=${subject}&body=${body}`;
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = submitBtnOriginalHTML;
+                }
             }
-
-
-            // ==========================================
-            // VALIDAÇÃO DO E-MAIL
-            // ==========================================
-
-            const emailRegex =
-                /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            if (!emailRegex.test(email)) {
-
-                alert("Digite um e-mail válido.");
-
-                return;
-            }
-
-
-            // ==========================================
-            // VALIDAÇÃO DO TELEFONE
-            // ==========================================
-
-            const telefoneNumeros =
-                telefone.replace(/\D/g, "");
-
-            if (
-                telefoneNumeros.length !== 10 &&
-                telefoneNumeros.length !== 11
-            ) {
-
-                alert("Digite um telefone válido.");
-
-                return;
-            }
-
-
-            // ==========================================
-            // TIPO DE SEGURO
-            // ==========================================
-
-            const seguroNome = {
-
-                saude: "Plano de Saúde",
-                odonto: "Odonto",
-                auto: "Auto",
-                vida: "Vida",
-                outro: "Outro"
-
-            };
-
-            const tipoSeguro =
-                seguroNome[seguro] || seguro;
-
-
-            // ==========================================
-            // MENSAGEM DO WHATSAPP
-            // ==========================================
-
-            const whatsappMessage =
-                `Olá! Gostaria de solicitar uma cotação pela Hadera.
-
-Nome: ${nome}
-E-mail: ${email}
-Telefone: ${telefone}
-Tipo de seguro: ${tipoSeguro}
-
-Mensagem:
-${mensagem}`;
-
-
-            // ==========================================
-            // ABRIR WHATSAPP
-            // ==========================================
-
-            const whatsappNumber =
-                "5511959400172";
-
-            const whatsappURL =
-                `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-
-            window.open(
-                whatsappURL,
-                "_blank"
-            );
 
         });
     }
 
+    /* ==========================================
+       LINKS DE WHATSAPP GENÉRICOS
+    ========================================== */
 
-    // ==========================================
-    // LINKS DO WHATSAPP
-    // ==========================================
-
-    const whatsappLinks =
-        document.querySelectorAll(".whatsapp-link");
-
-    const whatsappNumber =
-        "5511959400172";
-
-    const defaultMessage =
-        "Olá! Gostaria de falar com um consultor da Hadera.";
-
+    const whatsappLinks = document.querySelectorAll(".whatsapp-link");
+    const whatsappNumber = "5511959400172";
+    const defaultMessage = "Olá! Gostaria de falar com um consultor da Hadera.";
 
     whatsappLinks.forEach((link) => {
 
@@ -320,106 +269,159 @@ ${mensagem}`;
             const whatsappURL =
                 `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMessage)}`;
 
-            window.open(
-                whatsappURL,
-                "_blank"
-            );
+            window.open(whatsappURL, "_blank");
+        });
+    });
 
+
+    /* ==========================================
+       CARROSSEL DE AVALIAÇÕES
+    ========================================== */
+
+    (function () {
+
+        const track = document.getElementById("reviews-track");
+        const prevBtn = document.getElementById("reviews-prev");
+        const nextBtn = document.getElementById("reviews-next");
+
+        if (!track || !prevBtn || !nextBtn) return;
+
+        let currentIndex = 0;
+
+        function getVisibleCount() {
+            const w = window.innerWidth;
+            if (w <= 600) return 1;
+            if (w <= 1000) return 2;
+            return 3;
+        }
+
+        function getCardStep() {
+            const card = track.querySelector(".review-card");
+            if (!card) return 0;
+
+            const style = window.getComputedStyle(track);
+            const gap = parseFloat(style.columnGap || style.gap) || 24;
+
+            return card.offsetWidth + gap;
+        }
+
+        function getMaxIndex() {
+            const total = track.children.length;
+            const visible = getVisibleCount();
+
+            return Math.max(0, total - visible);
+        }
+
+        function update() {
+
+            const maxIndex = getMaxIndex();
+
+            if (currentIndex > maxIndex) currentIndex = maxIndex;
+            if (currentIndex < 0) currentIndex = 0;
+
+            const step = getCardStep();
+
+            track.style.transform = `translateX(-${currentIndex * step}px)`;
+
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex >= maxIndex;
+        }
+
+        prevBtn.addEventListener("click", () => {
+            currentIndex--;
+            update();
         });
 
-    });
-/* ========================================
-   CARROSSEL DE AVALIAÇÕES (com link nos cards)
-======================================== */
+        nextBtn.addEventListener("click", () => {
+            currentIndex++;
+            update();
+        });
 
-(function () {
-    const track = document.getElementById('reviews-track');
-    const prevBtn = document.getElementById('reviews-prev');
-    const nextBtn = document.getElementById('reviews-next');
+        // Impede que o clique abra o link caso o usuário esteja arrastando
+        let isDown = false;
+        let startX = 0;
+        let moved = false;
 
-    if (!track || !prevBtn || !nextBtn) return;
-
-    let currentIndex = 0;
-
-    function getVisibleCount() {
-        const w = window.innerWidth;
-        if (w <= 600) return 1;
-        if (w <= 1000) return 2;
-        return 3;
-    }
-
-    function getCardStep() {
-        const card = track.querySelector('.review-card');
-        if (!card) return 0;
-        const style = window.getComputedStyle(track);
-        const gap = parseFloat(style.columnGap || style.gap) || 24;
-        return card.offsetWidth + gap;
-    }
-
-    function getMaxIndex() {
-        const total = track.children.length;
-        const visible = getVisibleCount();
-        return Math.max(0, total - visible);
-    }
-
-    function update() {
-        const maxIndex = getMaxIndex();
-        if (currentIndex > maxIndex) currentIndex = maxIndex;
-        if (currentIndex < 0) currentIndex = 0;
-
-        const step = getCardStep();
-        track.style.transform = `translateX(-${currentIndex * step}px)`;
-
-        prevBtn.disabled = currentIndex === 0;
-        nextBtn.disabled = currentIndex >= maxIndex;
-    }
-
-    prevBtn.addEventListener('click', () => {
-        currentIndex--;
-        update();
-    });
-
-    nextBtn.addEventListener('click', () => {
-        currentIndex++;
-        update();
-    });
-
-    // Impede que o clique abra o link caso o usuário esteja arrastando
-    let isDown = false;
-    let startX = 0;
-    let moved = false;
-
-    track.addEventListener('mousedown', (e) => {
-        isDown = true;
-        startX = e.clientX;
-        moved = false;
-    });
-
-    track.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        if (Math.abs(e.clientX - startX) > 6) moved = true;
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDown = false;
-    });
-
-    track.addEventListener('click', (e) => {
-        if (moved) {
-            e.preventDefault();
+        track.addEventListener("mousedown", (e) => {
+            isDown = true;
+            startX = e.clientX;
             moved = false;
-        }
-    });
+        });
 
-    window.addEventListener('resize', () => {
-        currentIndex = Math.min(currentIndex, getMaxIndex());
+        track.addEventListener("mousemove", (e) => {
+            if (!isDown) return;
+            if (Math.abs(e.clientX - startX) > 6) moved = true;
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDown = false;
+        });
+
+        track.addEventListener("click", (e) => {
+            if (moved) {
+                e.preventDefault();
+                moved = false;
+            }
+        });
+
+        window.addEventListener("resize", () => {
+            currentIndex = Math.min(currentIndex, getMaxIndex());
+            update();
+        });
+
         update();
-    });
 
-    update();
-})();
+    })();
 
 
+    /* ==========================================
+       CARROSSEL DE OPERADORAS
+       (o loop infinito é feito via CSS,
+        mas garantimos a pausa no hover
+        caso o navegador não suporte)
+    ========================================== */
 
+    const operadorasTrack = document.querySelector(".carousel-track-operadoras");
+
+    if (operadorasTrack) {
+
+        // Pausa ao passar o mouse (fallback caso o CSS não aplique)
+        operadorasTrack.addEventListener("mouseenter", () => {
+            operadorasTrack.style.animationPlayState = "paused";
+        });
+
+        operadorasTrack.addEventListener("mouseleave", () => {
+            operadorasTrack.style.animationPlayState = "running";
+        });
+
+        // Suporte a toque (mobile)
+        operadorasTrack.addEventListener("touchstart", () => {
+            operadorasTrack.style.animationPlayState = "paused";
+        }, { passive: true });
+
+        operadorasTrack.addEventListener("touchend", () => {
+            operadorasTrack.style.animationPlayState = "running";
+        }, { passive: true });
+    }
 
 });
+
+/* ==========================================
+   SELEÇÃO AUTOMÁTICA DO TEXTO PADRÃO
+   (ao focar, o texto pré-preenchido fica selecionado)
+========================================== */
+
+const mensagemField = document.querySelector("#mensagem");
+
+if (mensagemField) {
+
+    // Texto padrão que serve de "modelo"
+    const textoPadrao = mensagemField.value.trim();
+
+    mensagemField.addEventListener("focus", () => {
+        // Só seleciona se o usuário ainda não tiver mexido no texto
+        if (mensagemField.value.trim() === textoPadrao) {
+            mensagemField.select();
+        }
+    });
+}
