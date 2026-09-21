@@ -253,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ==========================================
-       LINKS DE WHATSAPP GENÉRICOS
+       LINKS DE WHATSAPP
     ========================================== */
 
     const whatsappLinks = document.querySelectorAll(".whatsapp-link");
@@ -272,7 +272,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.open(whatsappURL, "_blank");
         });
     });
-
 
     /* ==========================================
        CARROSSEL DE AVALIAÇÕES
