@@ -107,9 +107,17 @@ select {
     border-radius: 1px;
 }
 
-.bar-motif i:nth-child(1) { height: 6px; }
-.bar-motif i:nth-child(2) { height: 9px; }
-.bar-motif i:nth-child(3) { height: 12px; }
+.bar-motif i:nth-child(1) {
+    height: 6px;
+}
+
+.bar-motif i:nth-child(2) {
+    height: 9px;
+}
+
+.bar-motif i:nth-child(3) {
+    height: 12px;
+}
 
 .section-head {
     max-width: 720px;
@@ -599,8 +607,13 @@ select {
 }
 
 @keyframes scroll-operadoras {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 .logo-operadora {
@@ -1176,8 +1189,13 @@ select {
     transform: translateY(-50%) scale(1.06);
 }
 
-.carousel-prev { left: 16px; }
-.carousel-next { right: 16px; }
+.carousel-prev {
+    left: 16px;
+}
+
+.carousel-next {
+    right: 16px;
+}
 
 .carousel-arrow:disabled {
     opacity: 0.3;
@@ -1228,8 +1246,13 @@ select {
         height: 40px;
     }
 
-    .carousel-prev { left: 10px; }
-    .carousel-next { right: 10px; }
+    .carousel-prev {
+        left: 10px;
+    }
+
+    .carousel-next {
+        right: 10px;
+    }
 }
 
 
@@ -1439,7 +1462,8 @@ select {
 }
 
 .form-group textarea {
-    resize: none;               /* ← tira o controle de redimensionar */
+    resize: none;
+    /* ← tira o controle de redimensionar */
     min-height: 140px;
     font-family: var(--font-body);
 }
@@ -1581,9 +1605,10 @@ select {
    ============================================================ */
 
 .site-footer {
-    background: #0B0908;
-    color: rgba(255, 255, 255, 0.65);
+    background: var(--white);
+    color: var(--ink-soft);
     padding-top: 80px;
+    border-top: 1px solid var(--line);
 }
 
 .footer-grid {
@@ -1591,23 +1616,28 @@ select {
     grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
     gap: 60px;
     padding-bottom: 70px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line);
 }
 
+
+/* ---------- Marca ---------- */
+
 .footer-brand .footer-logo {
-    width: 130px;
-    background: #FFFFFF;
-    padding: 8px 12px;
-    border-radius: 8px;
+    width: 150px;
+    height: auto;
     margin-bottom: 22px;
 }
 
 .footer-brand p {
     font-size: 14px;
     line-height: 1.7;
+    color: var(--muted);
     margin-bottom: 26px;
     max-width: 300px;
 }
+
+
+/* ---------- Redes sociais ---------- */
 
 .footer-social {
     display: flex;
@@ -1621,20 +1651,25 @@ select {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--cream);
+    color: var(--ink);
+    border: 1px solid var(--line);
     transition: var(--ease);
 }
 
 .footer-social a:hover {
     background: var(--red);
+    border-color: var(--red);
     color: var(--white);
     transform: translateY(-2px);
 }
 
+
+/* ---------- Colunas ---------- */
+
 .footer-column h4 {
     font-family: var(--font-display);
-    color: var(--white);
+    color: var(--ink);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.18em;
@@ -1652,13 +1687,16 @@ select {
 .footer-column ul li a,
 .footer-column ul li span {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--muted);
     transition: color var(--ease);
 }
 
 .footer-column ul li a:hover {
-    color: var(--white);
+    color: var(--red);
 }
+
+
+/* ---------- Contato com ícones ---------- */
 
 .footer-contact li {
     display: flex;
@@ -1666,17 +1704,30 @@ select {
     gap: 10px;
     font-size: 14px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--muted);
 }
 
 .footer-contact li svg {
     flex-shrink: 0;
     margin-top: 3px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--red);
 }
+
+.footer-contact li a {
+    color: var(--muted);
+    transition: color var(--ease);
+}
+
+.footer-contact li a:hover {
+    color: var(--red);
+}
+
+
+/* ---------- Parte inferior ---------- */
 
 .footer-bottom {
     padding: 26px 0;
+    background: var(--cream);
 }
 
 .footer-bottom-inner {
@@ -1689,7 +1740,8 @@ select {
 
 .footer-bottom p {
     font-size: 12.5px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--muted);
+    margin: 0;
 }
 
 .footer-legal {
@@ -1699,13 +1751,16 @@ select {
 
 .footer-legal a {
     font-size: 12.5px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--muted);
     transition: color var(--ease);
 }
 
 .footer-legal a:hover {
-    color: var(--white);
+    color: var(--red);
 }
+
+
+/* ---------- Responsivo ---------- */
 
 @media (max-width: 1000px) {
     .footer-grid {
@@ -1827,9 +1882,7 @@ textarea:focus-visible {
         scroll-behavior: auto;
     }
 
-    *,
-    *::before,
-    *::after {
+    *:not(.carousel-track-operadoras) {
         transition: none !important;
         animation: none !important;
     }
