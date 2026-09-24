@@ -1926,3 +1926,29 @@ textarea:focus-visible {
         justify-content: center;
     }
 }
+
+/* ============================================================
+   DRAG NOS CARROSSÉIS
+   ============================================================ */
+
+.reviews-track,
+.insurance-track {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y;
+}
+
+/* Impede arrastar imagens como arquivo */
+.review-card img,
+.insurance-card img {
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+/* Se as setas ainda existirem no HTML, esconde */
+.carousel-arrow,
+.reviews-nav {
+    display: none;
+}

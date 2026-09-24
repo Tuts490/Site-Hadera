@@ -1,55 +1,166 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ==========================================
+       ANO AUTOMÁTICO DO FOOTER
+    ========================================== */
+
+    const currentYear = document.querySelector("#current-year");
+    if (currentYear) {
+        currentYear.textContent = new Date().getFullYear();
+    }
+
+
+    /* ==========================================
+   FUNÇÃO GENÉRICA DE DRAG
+   Clique limpo → link abre normal.
+   Arraste real  → desliza e suprime clique fantasma.
+========================================== */
+
+    function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange }) {
+
+        let isDown = false;
+        let didDrag = false;
+        let startX = 0;
+        let startTranslate = 0;
+        let lastTranslate = 0;
+
+        function getTranslate() {
+            const tr = window.getComputedStyle(track).transform;
+            if (!tr || tr === "none") return 0;
+            const m = tr.match(/matrix\(([^)]+)\)/);
+            return m ? parseFloat(m[1].split(",")[4]) || 0 : 0;
+        }
+
+        function onMove(e) {
+            if (!isDown) return;
+
+            const diff = e.clientX - startX;
+
+            // Só considera drag depois de 10px
+            if (!didDrag) {
+                if (Math.abs(diff) < 10) return;
+                didDrag = true;
+                track.style.transition = "none";
+            }
+
+            let next = startTranslate + diff;
+
+            const minT = -getMaxIndex() * getStep();
+            const maxT = 0;
+
+            if (next > maxT) {
+                next = maxT + (next - maxT) * 0.35;
+            } else if (next < minT) {
+                next = minT + (next - minT) * 0.35;
+            }
+
+            lastTranslate = next;
+            track.style.transform = `translateX(${next}px)`;
+        }
+
+        function onUp() {
+            if (!isDown) return;
+            isDown = false;
+
+            document.removeEventListener("pointermove", onMove);
+            document.removeEventListener("pointerup", onUp);
+            document.removeEventListener("pointercancel", onUp);
+
+            // Clique limpo: não faz nada, deixa o link funcionar
+            if (!didDrag) {
+                didDrag = false;
+                return;
+            }
+
+            didDrag = false;
+
+            const step = getStep();
+            const diff = lastTranslate - startTranslate;
+            const steps = Math.round(-diff / step);
+
+            let newIndex = getIndex() + steps;
+            newIndex = Math.max(0, Math.min(getMaxIndex(), newIndex));
+
+            setIndex(newIndex);
+            track.style.transition = "";
+            onChange();
+
+            // Suprime o próximo clique (que o navegador dispara após o arraste)
+            const suppressClick = (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                ev.stopImmediatePropagation();
+            };
+
+            track.addEventListener("click", suppressClick, { capture: true, once: true });
+
+            // Failsafe: se o clique nunca vier, remove o listener depois
+            setTimeout(() => {
+                track.removeEventListener("click", suppressClick, { capture: true });
+            }, 350);
+        }
+
+        track.addEventListener("pointerdown", (e) => {
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+
+            isDown = true;
+            didDrag = false;
+            startX = e.clientX;
+            startTranslate = getTranslate();
+            lastTranslate = startTranslate;
+
+            document.addEventListener("pointermove", onMove);
+            document.addEventListener("pointerup", onUp);
+            document.addEventListener("pointercancel", onUp);
+        });
+
+        // Bloqueia o drag nativo do navegador em links/imagens
+        track.addEventListener("dragstart", (e) => e.preventDefault());
+    }
+
+
+    /* ==========================================
        CARROSSEL DE SEGUROS
     ========================================== */
 
-    const insuranceCarousel = document.querySelector(".insurance-carousel");
     const insuranceTrack = document.querySelector(".insurance-track");
     const insuranceCards = document.querySelectorAll(".insurance-card");
     const insuranceDots = document.querySelector(".carousel-dots");
-    const insurancePrev = document.querySelector(".carousel-prev");
-    const insuranceNext = document.querySelector(".carousel-next");
 
-    if (
-        insuranceCarousel &&
-        insuranceTrack &&
-        insuranceCards.length > 0 &&
-        insuranceDots &&
-        insurancePrev &&
-        insuranceNext
-    ) {
+    if (insuranceTrack && insuranceCards.length > 0 && insuranceDots) {
 
         let currentPage = 0;
 
-        function getCardsPerPage() {
+        const getCardsPerPage = () => {
             if (window.innerWidth <= 600) return 1;
             if (window.innerWidth <= 900) return 2;
             return 3;
-        }
+        };
 
-        function getTotalPages() {
-            return Math.ceil(insuranceCards.length / getCardsPerPage());
-        }
+        const getTotalPages = () => Math.ceil(insuranceCards.length / getCardsPerPage());
+
+        const getGap = () => {
+            const st = window.getComputedStyle(insuranceTrack);
+            return parseFloat(st.columnGap || st.gap) || 22;
+        };
+
+        const getStep = () => {
+            const w = insuranceCards[0].getBoundingClientRect().width;
+            return (w + getGap()) * getCardsPerPage();
+        };
+
+        const getMaxIndex = () => Math.max(0, getTotalPages() - 1);
 
         function createDots() {
-
             insuranceDots.innerHTML = "";
+            const total = getTotalPages();
 
-            const totalPages = getTotalPages();
-
-            for (let i = 0; i < totalPages; i++) {
-
+            for (let i = 0; i < total; i++) {
                 const dot = document.createElement("button");
-
                 dot.type = "button";
                 dot.classList.add("carousel-dot");
-
                 dot.setAttribute("aria-label", `Ir para página ${i + 1}`);
-
-                if (i === currentPage) {
-                    dot.classList.add("active");
-                }
+                if (i === currentPage) dot.classList.add("active");
 
                 dot.addEventListener("click", () => {
                     currentPage = i;
@@ -61,96 +172,111 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         function updateInsuranceCarousel() {
+            insuranceTrack.style.transition = "";
+            insuranceTrack.style.transform = `translateX(-${currentPage * getStep()}px)`;
 
-            const cardsPerPage = getCardsPerPage();
-
-            if (insuranceCards.length === 0) return;
-
-            const cardWidth = insuranceCards[0].getBoundingClientRect().width;
-
-            const trackStyle = window.getComputedStyle(insuranceTrack);
-            const gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 22;
-
-            const moveAmount = (cardWidth + gap) * cardsPerPage * currentPage;
-
-            insuranceTrack.style.transform = `translateX(-${moveAmount}px)`;
-
-            insurancePrev.disabled = currentPage === 0;
-            insuranceNext.disabled = currentPage >= getTotalPages() - 1;
-
-            const dots = insuranceDots.querySelectorAll(".carousel-dot");
-
-            dots.forEach((dot, index) => {
-                dot.classList.toggle("active", index === currentPage);
+            insuranceDots.querySelectorAll(".carousel-dot").forEach((dot, idx) => {
+                dot.classList.toggle("active", idx === currentPage);
             });
         }
 
-        // Event listeners adicionados UMA vez
-        insurancePrev.addEventListener("click", () => {
-            if (currentPage > 0) {
-                currentPage--;
-                updateInsuranceCarousel();
-            }
+        enableDrag({
+            track: insuranceTrack,
+            getIndex: () => currentPage,
+            setIndex: (i) => { currentPage = i; },
+            getStep,
+            getMaxIndex,
+            onChange: updateInsuranceCarousel
         });
 
-        insuranceNext.addEventListener("click", () => {
-            if (currentPage < getTotalPages() - 1) {
-                currentPage++;
-                updateInsuranceCarousel();
-            }
-        });
-
-        // Inicializa
         createDots();
         updateInsuranceCarousel();
 
-        // Redimensionamento
+        let resizeTimer;
         window.addEventListener("resize", () => {
-
-            const totalPages = getTotalPages();
-
-            if (currentPage >= totalPages) {
-                currentPage = Math.max(0, totalPages - 1);
-            }
-
-            createDots();
-            updateInsuranceCarousel();
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                currentPage = Math.min(currentPage, getMaxIndex());
+                createDots();
+                updateInsuranceCarousel();
+            }, 150);
         });
     }
 
 
     /* ==========================================
-       ANO AUTOMÁTICO DO FOOTER
+       CARROSSEL DE AVALIAÇÕES
     ========================================== */
 
-    const currentYear = document.querySelector("#current-year");
+    const reviewsTrack = document.getElementById("reviews-track");
 
-    if (currentYear) {
-        currentYear.textContent = new Date().getFullYear();
+    if (reviewsTrack) {
+
+        let currentIndex = 0;
+
+        const getVisibleCount = () => {
+            const w = window.innerWidth;
+            if (w <= 600) return 1;
+            if (w <= 1000) return 2;
+            return 3;
+        };
+
+        const getStep = () => {
+            const card = reviewsTrack.querySelector(".review-card");
+            if (!card) return 0;
+            const st = window.getComputedStyle(reviewsTrack);
+            const gap = parseFloat(st.columnGap || st.gap) || 24;
+            return card.offsetWidth + gap;
+        };
+
+        const getMaxIndex = () =>
+            Math.max(0, reviewsTrack.children.length - getVisibleCount());
+
+        function updateReviewsCarousel() {
+            const max = getMaxIndex();
+            if (currentIndex > max) currentIndex = max;
+            if (currentIndex < 0) currentIndex = 0;
+
+            reviewsTrack.style.transition = "";
+            reviewsTrack.style.transform = `translateX(-${currentIndex * getStep()}px)`;
+        }
+
+        enableDrag({
+            track: reviewsTrack,
+            getIndex: () => currentIndex,
+            setIndex: (i) => { currentIndex = i; },
+            getStep,
+            getMaxIndex,
+            onChange: updateReviewsCarousel
+        });
+
+        updateReviewsCarousel();
+
+        let resizeTimer;
+        window.addEventListener("resize", () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                currentIndex = Math.min(currentIndex, getMaxIndex());
+                updateReviewsCarousel();
+            }, 150);
+        });
     }
 
 
     /* ==========================================
-   FORMULÁRIO DE CONTATO
-   Envia nome, e-mail e mensagem para o e-mail
-   do corretor via Formspree.
-========================================== */
+       FORMULÁRIO DE CONTATO
+    ========================================== */
 
     const contactForm = document.querySelector("#contact-form");
 
     if (contactForm) {
 
-        // ⚠️ SUBSTITUA pelo seu endpoint do Formspree
-        // Exemplo: "https://formspree.io/f/xabcdefg"
         const FORMSPREE_ENDPOINT = "https://formspree.io/f/mrpbqgpo";
-
-        // Para onde enviar (usado apenas como fallback via mailto)
         const CORRETOR_EMAIL = "vendas@hadera.com.br";
 
         const submitBtn = contactForm.querySelector("button[type='submit']");
         const submitBtnOriginalHTML = submitBtn ? submitBtn.innerHTML : "";
 
-        // Cria elemento de feedback (sucesso/erro) se não existir
         let feedback = contactForm.querySelector(".form-feedback");
         if (!feedback) {
             feedback = document.createElement("div");
@@ -169,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         contactForm.addEventListener("submit", async (event) => {
-
             event.preventDefault();
             hideFeedback();
 
@@ -181,7 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const email = emailInput.value.trim();
             const mensagem = mensagemInput.value.trim();
 
-            // Validações
             if (!nome || !email || !mensagem) {
                 showFeedback("Por favor, preencha todos os campos.", "error");
                 return;
@@ -194,14 +318,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Estado de carregamento
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = "Enviando...";
             }
 
             try {
-
                 const response = await fetch(FORMSPREE_ENDPOINT, {
                     method: "POST",
                     headers: {
@@ -209,18 +331,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        nome: nome,
-                        email: email,
-                        mensagem: mensagem,
+                        nome, email, mensagem,
                         _subject: `Nova mensagem do site — ${nome}`
                     })
                 });
 
                 if (response.ok) {
-                    showFeedback(
-                        "Mensagem enviada! Entraremos em contato em breve.",
-                        "success"
-                    );
+                    showFeedback("Mensagem enviada! Entraremos em contato em breve.", "success");
                     contactForm.reset();
                 } else {
                     const data = await response.json().catch(() => ({}));
@@ -230,197 +347,70 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
             } catch (error) {
-                // Fallback: abre o cliente de e-mail com tudo preenchido
                 const subject = encodeURIComponent(`Contato pelo site — ${nome}`);
                 const body = encodeURIComponent(
                     `Nome: ${nome}\nE-mail: ${email}\n\n${mensagem}`
                 );
 
-                showFeedback(
-                    "Sem conexão. Abrindo seu e-mail para enviar a mensagem...",
-                    "error"
-                );
-
+                showFeedback("Sem conexão. Abrindo seu e-mail...", "error");
                 window.location.href = `mailto:${CORRETOR_EMAIL}?subject=${subject}&body=${body}`;
+
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = submitBtnOriginalHTML;
                 }
             }
-
         });
     }
+
 
     /* ==========================================
        LINKS DE WHATSAPP
     ========================================== */
 
-    const whatsappLinks = document.querySelectorAll(".whatsapp-link");
     const whatsappNumber = "5511959400172";
     const defaultMessage = "Olá! Gostaria de falar com um consultor da Hadera.";
 
-    whatsappLinks.forEach((link) => {
-
+    document.querySelectorAll(".whatsapp-link").forEach((link) => {
         link.addEventListener("click", (event) => {
-
             event.preventDefault();
-
-            const whatsappURL =
-                `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMessage)}`;
-
-            window.open(whatsappURL, "_blank");
+            const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMessage)}`;
+            window.open(url, "_blank");
         });
     });
 
-    /* ==========================================
-       CARROSSEL DE AVALIAÇÕES
-    ========================================== */
-
-    (function () {
-
-        const track = document.getElementById("reviews-track");
-        const prevBtn = document.getElementById("reviews-prev");
-        const nextBtn = document.getElementById("reviews-next");
-
-        if (!track || !prevBtn || !nextBtn) return;
-
-        let currentIndex = 0;
-
-        function getVisibleCount() {
-            const w = window.innerWidth;
-            if (w <= 600) return 1;
-            if (w <= 1000) return 2;
-            return 3;
-        }
-
-        function getCardStep() {
-            const card = track.querySelector(".review-card");
-            if (!card) return 0;
-
-            const style = window.getComputedStyle(track);
-            const gap = parseFloat(style.columnGap || style.gap) || 24;
-
-            return card.offsetWidth + gap;
-        }
-
-        function getMaxIndex() {
-            const total = track.children.length;
-            const visible = getVisibleCount();
-
-            return Math.max(0, total - visible);
-        }
-
-        function update() {
-
-            const maxIndex = getMaxIndex();
-
-            if (currentIndex > maxIndex) currentIndex = maxIndex;
-            if (currentIndex < 0) currentIndex = 0;
-
-            const step = getCardStep();
-
-            track.style.transform = `translateX(-${currentIndex * step}px)`;
-
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex >= maxIndex;
-        }
-
-        prevBtn.addEventListener("click", () => {
-            currentIndex--;
-            update();
-        });
-
-        nextBtn.addEventListener("click", () => {
-            currentIndex++;
-            update();
-        });
-
-        // Impede que o clique abra o link caso o usuário esteja arrastando
-        let isDown = false;
-        let startX = 0;
-        let moved = false;
-
-        track.addEventListener("mousedown", (e) => {
-            isDown = true;
-            startX = e.clientX;
-            moved = false;
-        });
-
-        track.addEventListener("mousemove", (e) => {
-            if (!isDown) return;
-            if (Math.abs(e.clientX - startX) > 6) moved = true;
-        });
-
-        document.addEventListener("mouseup", () => {
-            isDown = false;
-        });
-
-        track.addEventListener("click", (e) => {
-            if (moved) {
-                e.preventDefault();
-                moved = false;
-            }
-        });
-
-        window.addEventListener("resize", () => {
-            currentIndex = Math.min(currentIndex, getMaxIndex());
-            update();
-        });
-
-        update();
-
-    })();
-
 
     /* ==========================================
-       CARROSSEL DE OPERADORAS
-       (o loop infinito é feito via CSS,
-        mas garantimos a pausa no hover
-        caso o navegador não suporte)
+       CARROSSEL DE OPERADORAS (pausa no hover)
     ========================================== */
 
     const operadorasTrack = document.querySelector(".carousel-track-operadoras");
 
     if (operadorasTrack) {
-
-        // Pausa ao passar o mouse (fallback caso o CSS não aplique)
         operadorasTrack.addEventListener("mouseenter", () => {
             operadorasTrack.style.animationPlayState = "paused";
         });
-
         operadorasTrack.addEventListener("mouseleave", () => {
             operadorasTrack.style.animationPlayState = "running";
         });
+    }
 
-        // Suporte a toque (mobile)
-        operadorasTrack.addEventListener("touchstart", () => {
-            operadorasTrack.style.animationPlayState = "paused";
-        }, { passive: true });
 
-        operadorasTrack.addEventListener("touchend", () => {
-            operadorasTrack.style.animationPlayState = "running";
-        }, { passive: true });
+    /* ==========================================
+       SELEÇÃO AUTOMÁTICA DO TEXTO DO TEXTAREA
+    ========================================== */
+
+    const mensagemField = document.querySelector("#mensagem");
+
+    if (mensagemField) {
+        const textoPadrao = mensagemField.value.trim();
+
+        mensagemField.addEventListener("focus", () => {
+            if (mensagemField.value.trim() === textoPadrao) {
+                mensagemField.select();
+            }
+        });
     }
 
 });
-
-/* ==========================================
-   SELEÇÃO AUTOMÁTICA DO TEXTO PADRÃO
-   (ao focar, o texto pré-preenchido fica selecionado)
-========================================== */
-
-const mensagemField = document.querySelector("#mensagem");
-
-if (mensagemField) {
-
-    // Texto padrão que serve de "modelo"
-    const textoPadrao = mensagemField.value.trim();
-
-    mensagemField.addEventListener("focus", () => {
-        // Só seleciona se o usuário ainda não tiver mexido no texto
-        if (mensagemField.value.trim() === textoPadrao) {
-            mensagemField.select();
-        }
-    });
-}
