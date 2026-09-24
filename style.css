@@ -2096,3 +2096,88 @@ textarea:focus-visible {
         font-size: 15px;
     }
 }
+
+/* ============================================================
+   SETAS DISCRETAS DOS CARROSSÉIS (desktop)
+   ============================================================ */
+
+.reviews-carousel {
+    position: relative;
+}
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+
+    background: var(--white);
+    color: var(--ink);
+    border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(20, 17, 15, 0.12);
+
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.25s ease,
+        background 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* Aparecem no hover do carrossel */
+.reviews-carousel:hover .carousel-nav,
+.insurance-carousel:hover .carousel-nav,
+.carousel-nav:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.carousel-nav:hover {
+    background: var(--red);
+    color: var(--white);
+    transform: translateY(-50%) scale(1.06);
+}
+
+.carousel-nav-prev {
+    left: -21px;   /* metade da largura (42px) para fora */
+}
+
+.carousel-nav-next {
+    right: -21px;
+}
+
+/* Só no desktop */
+@media (max-width: 900px) {
+    .carousel-nav {
+        display: none;
+    }
+}
+
+/* Respeita quem prefere menos animação */
+@media (prefers-reduced-motion: reduce) {
+    .carousel-nav {
+        transition: none;
+    }
+}
+
+.reviews-carousel,
+.insurance-carousel {
+    overflow: visible;
+}
+
+/* Mas o track continua escondendo o que passa */
+.reviews-track,
+.insurance-track {
+    overflow: hidden;
+}

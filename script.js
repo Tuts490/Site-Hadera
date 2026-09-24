@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
    Arraste real  → desliza e suprime clique fantasma.
 ========================================== */
 
-    function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange }) {
+    function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange, onUserDrag }) {
 
         let isDown = false;
         let didDrag = false;
@@ -85,6 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
             track.style.transition = "";
             onChange();
 
+            if (onUserDrag) onUserDrag();
+
             // Suprime o próximo clique (que o navegador dispara após o arraste)
             const suppressClick = (ev) => {
                 ev.preventDefault();
@@ -118,16 +120,91 @@ document.addEventListener("DOMContentLoaded", () => {
         track.addEventListener("dragstart", (e) => e.preventDefault());
     }
 
+    /* ==========================================
+   AUTOPLAY DOS CARROSSÉIS
+   Pausa no hover, ao arrastar e fora da tela.
+   Desliga se o usuário prefere menos animação.
+========================================== */
+
+    function setupAutoplay({ wrapper, getIndex, setIndex, getMaxIndex, onChange }) {
+
+        const INTERVAL = 8000;      // 8 segundos
+        const USER_PAUSE = 8000;    // pausa de 8s após interação
+
+        // Respeita prefers-reduced-motion — nunca liga autoplay
+        const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (prefersReduced) {
+            return {
+                pauseForUser: () => { },
+                start: () => { },
+                stop: () => { }
+            };
+        }
+
+        let timer = null;
+        let isPaused = false;
+        let isVisible = false;
+        let userPauseTimer = null;
+
+        function tick() {
+            if (isPaused || !isVisible) return;
+
+            let next = getIndex() + 1;
+            if (next > getMaxIndex()) next = 0;   // loop infinito
+
+            setIndex(next);
+            onChange();
+        }
+
+        function start() {
+            if (timer) return;
+            timer = setInterval(tick, INTERVAL);
+        }
+
+        function stop() {
+            if (!timer) return;
+            clearInterval(timer);
+            timer = null;
+        }
+
+        function pauseForUser() {
+            isPaused = true;
+            clearTimeout(userPauseTimer);
+            userPauseTimer = setTimeout(() => {
+                isPaused = false;
+            }, USER_PAUSE);
+        }
+
+        // Pausa no hover (desktop)
+        wrapper.addEventListener("mouseenter", () => { isPaused = true; });
+        wrapper.addEventListener("mouseleave", () => { isPaused = false; });
+
+        // Só roda quando o carrossel está visível na tela
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                isVisible = entry.isIntersecting;
+                if (isVisible) start();
+                else stop();
+            });
+        }, { threshold: 0.3 });
+
+        observer.observe(wrapper);
+
+        return { pauseForUser, start, stop };
+    }
 
     /* ==========================================
-       CARROSSEL DE SEGUROS
-    ========================================== */
+   CARROSSEL DE SEGUROS
+========================================== */
 
+    const insuranceCarousel = document.getElementById("insurance-carousel");
     const insuranceTrack = document.querySelector(".insurance-track");
     const insuranceCards = document.querySelectorAll(".insurance-card");
     const insuranceDots = document.querySelector(".carousel-dots");
+    const insurancePrev = document.getElementById("insurance-prev");
+    const insuranceNext = document.getElementById("insurance-next");
 
-    if (insuranceTrack && insuranceCards.length > 0 && insuranceDots) {
+    if (insuranceCarousel && insuranceTrack && insuranceCards.length > 0 && insuranceDots) {
 
         let currentPage = 0;
 
@@ -165,6 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 dot.addEventListener("click", () => {
                     currentPage = i;
                     updateInsuranceCarousel();
+                    insuranceAutoplay.pauseForUser();
                 });
 
                 insuranceDots.appendChild(dot);
@@ -180,13 +258,45 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        // Autoplay
+        const insuranceAutoplay = setupAutoplay({
+            wrapper: insuranceCarousel,
+            getIndex: () => currentPage,
+            setIndex: (i) => { currentPage = i; },
+            getMaxIndex,
+            onChange: updateInsuranceCarousel
+        });
+
+        // Setas
+        if (insurancePrev) {
+            insurancePrev.addEventListener("click", () => {
+                let next = currentPage - 1;
+                if (next < 0) next = getMaxIndex();
+                currentPage = next;
+                updateInsuranceCarousel();
+                insuranceAutoplay.pauseForUser();
+            });
+        }
+
+        if (insuranceNext) {
+            insuranceNext.addEventListener("click", () => {
+                let next = currentPage + 1;
+                if (next > getMaxIndex()) next = 0;
+                currentPage = next;
+                updateInsuranceCarousel();
+                insuranceAutoplay.pauseForUser();
+            });
+        }
+
+        // Drag
         enableDrag({
             track: insuranceTrack,
             getIndex: () => currentPage,
             setIndex: (i) => { currentPage = i; },
             getStep,
             getMaxIndex,
-            onChange: updateInsuranceCarousel
+            onChange: updateInsuranceCarousel,
+            onUserDrag: () => insuranceAutoplay.pauseForUser()
         });
 
         createDots();
@@ -203,14 +313,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     /* ==========================================
-       CARROSSEL DE AVALIAÇÕES
-    ========================================== */
+   CARROSSEL DE AVALIAÇÕES
+========================================== */
 
+    const reviewsCarousel = document.getElementById("reviews-carousel");
     const reviewsTrack = document.getElementById("reviews-track");
+    const reviewsPrev = document.getElementById("reviews-prev");
+    const reviewsNext = document.getElementById("reviews-next");
 
-    if (reviewsTrack) {
+    if (reviewsCarousel && reviewsTrack) {
 
         let currentIndex = 0;
 
@@ -241,13 +353,45 @@ document.addEventListener("DOMContentLoaded", () => {
             reviewsTrack.style.transform = `translateX(-${currentIndex * getStep()}px)`;
         }
 
+        // Autoplay
+        const reviewsAutoplay = setupAutoplay({
+            wrapper: reviewsCarousel,
+            getIndex: () => currentIndex,
+            setIndex: (i) => { currentIndex = i; },
+            getMaxIndex,
+            onChange: updateReviewsCarousel
+        });
+
+        // Setas
+        if (reviewsPrev) {
+            reviewsPrev.addEventListener("click", () => {
+                let next = currentIndex - 1;
+                if (next < 0) next = getMaxIndex();
+                currentIndex = next;
+                updateReviewsCarousel();
+                reviewsAutoplay.pauseForUser();
+            });
+        }
+
+        if (reviewsNext) {
+            reviewsNext.addEventListener("click", () => {
+                let next = currentIndex + 1;
+                if (next > getMaxIndex()) next = 0;
+                currentIndex = next;
+                updateReviewsCarousel();
+                reviewsAutoplay.pauseForUser();
+            });
+        }
+
+        // Drag
         enableDrag({
             track: reviewsTrack,
             getIndex: () => currentIndex,
             setIndex: (i) => { currentIndex = i; },
             getStep,
             getMaxIndex,
-            onChange: updateReviewsCarousel
+            onChange: updateReviewsCarousel,
+            onUserDrag: () => reviewsAutoplay.pauseForUser()
         });
 
         updateReviewsCarousel();
@@ -261,7 +405,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 150);
         });
     }
-
 
     /* ==========================================
        FORMULÁRIO DE CONTATO
