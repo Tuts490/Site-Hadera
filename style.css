@@ -930,18 +930,6 @@ select {
     outline-offset: 3px;
 }
 
-.review-card::after {
-    content: "Ver no Google ↗";
-    margin-top: 22px;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    color: var(--red);
-    transition: transform var(--ease);
-}
-
 .review-card:hover::after {
     transform: translateX(3px);
 }
@@ -1947,12 +1935,6 @@ textarea:focus-visible {
     pointer-events: none;
 }
 
-/* Se as setas ainda existirem no HTML, esconde */
-.carousel-arrow,
-.reviews-nav {
-    display: none;
-}
-
 /* ============================================================
    PÁGINA LEGAL (Política de Privacidade, Termos de Uso)
    ============================================================ */
@@ -1980,16 +1962,6 @@ textarea:focus-visible {
     letter-spacing: -0.025em;
     color: var(--ink);
     margin-bottom: 20px;
-}
-
-.legal-updated {
-    font-size: 14px;
-    color: var(--muted);
-}
-
-.legal-updated strong {
-    color: var(--ink);
-    font-weight: 600;
 }
 
 .legal-section {
@@ -2309,7 +2281,6 @@ textarea:focus-visible {
     background: var(--white);
     border-radius: 18px;
 
-    /* Detalhe da marca: borda superior fina vermelha */
     border-top: none;
 
     box-shadow:
