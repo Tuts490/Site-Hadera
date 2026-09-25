@@ -2290,3 +2290,231 @@ textarea:focus-visible {
         text-align: left;
     }
 }
+
+/* ============================================================
+   POPUP FALE COM ESPECIALISTA
+   ============================================================ */
+
+.specialist-popup {
+    position: fixed;
+
+    left: 26px;
+    bottom: 26px;
+
+    width: 340px;
+    max-width: calc(100vw - 32px);
+
+    padding: 22px 22px 20px;
+
+    background: var(--white);
+    border-radius: 18px;
+
+    /* Detalhe da marca: borda superior fina vermelha */
+    border-top: none;
+
+    box-shadow:
+        0 2px 6px rgba(20, 17, 15, 0.04),
+        0 30px 60px -20px rgba(20, 17, 15, 0.22);
+
+    z-index: 9998;
+
+    opacity: 0;
+    transform: translateY(16px);
+    pointer-events: none;
+
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.specialist-popup.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+
+/* ---------- Botão fechar ---------- */
+
+.specialist-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+
+    background: transparent;
+    border: none;
+    color: var(--muted);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease);
+}
+
+.specialist-close:hover {
+    background: var(--cream);
+    color: var(--ink);
+}
+
+
+/* ---------- Linha da marca (logo + status) ---------- */
+
+.specialist-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+
+    border-bottom: 1px solid var(--line);
+}
+
+.specialist-brand img {
+    width: 68px;
+    height: auto;
+    flex-shrink: 0;
+}
+
+.specialist-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    background: rgba(39, 174, 96, 0.1);
+    color: #1E8C4C;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.specialist-status .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #27AE60;
+
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
+    animation: pulse-dot 2s ease-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%   { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.5); }
+    100% { box-shadow: 0 0 0 8px rgba(39, 174, 96, 0); }
+}
+
+
+/* ---------- Conteúdo ---------- */
+
+.specialist-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.specialist-content strong {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    line-height: 1.25;
+}
+
+.specialist-content p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin-bottom: 14px;
+}
+
+
+/* ---------- Botão CTA ---------- */
+
+.specialist-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 12px 18px;
+
+    background: var(--red);
+    color: var(--white);
+
+    border-radius: 999px;
+
+    font-size: 13.5px;
+    font-weight: 600;
+
+    transition: var(--ease);
+}
+
+.specialist-cta:hover {
+    background: var(--red-dark);
+    box-shadow: 0 10px 24px -6px rgba(192, 39, 45, 0.4);
+    transform: translateY(-1px);
+}
+
+.specialist-cta svg {
+    flex-shrink: 0;
+    transition: transform var(--ease);
+}
+
+.specialist-cta:hover svg {
+    transform: translateX(3px);
+}
+
+
+/* ---------- Responsivo ---------- */
+
+@media (max-width: 600px) {
+
+    .specialist-popup {
+        left: 16px;
+        right: 16px;
+        bottom: 84px;
+
+        width: auto;
+        max-width: none;
+
+        padding: 20px 20px 18px;
+    }
+
+    .specialist-brand img {
+        width: 60px;
+    }
+
+    .specialist-content strong {
+        font-size: 16px;
+    }
+
+    .specialist-content p {
+        font-size: 13.5px;
+    }
+
+    .specialist-cta {
+        width: 100%;
+    }
+}
+
+
+/* ---------- Preferência por menos movimento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .specialist-popup {
+        transition: none;
+    }
+    .specialist-status .dot {
+        animation: none;
+    }
+}

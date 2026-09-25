@@ -556,4 +556,61 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    /* ==========================================
+   POPUP FALE COM ESPECIALISTA
+   Aparece depois de 8s, só uma vez por sessão
+   (o "fechar" fica salvo por 24 horas).
+========================================== */
+
+    (function () {
+
+        const popup = document.getElementById("specialist-popup");
+        const closeBtn = document.getElementById("specialist-close");
+
+        if (!popup || !closeBtn) return;
+
+        const STORAGE_KEY = "hadera_specialist_dismissed";
+        const DELAY = 8000;              // 8 segundos
+        const DISMISS_HOURS = 24;        // não aparece de novo por 24h
+
+        // Se foi fechado recentemente, não mostra
+        const dismissedAt = localStorage.getItem(STORAGE_KEY);
+        if (dismissedAt) {
+            const hoursSince = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60);
+            if (hoursSince < DISMISS_HOURS) return;
+        }
+
+        function showPopup() {
+            popup.classList.add("visible");
+        }
+
+        function hidePopup() {
+            popup.classList.remove("visible");
+            localStorage.setItem(STORAGE_KEY, Date.now().toString());
+        }
+
+        // Mostra depois do delay
+        const timer = setTimeout(showPopup, DELAY);
+
+        // Fechar
+        closeBtn.addEventListener("click", hidePopup);
+
+        // Fechar no ESC (acessibilidade)
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && popup.classList.contains("visible")) {
+                hidePopup();
+            }
+        });
+
+        // Se o usuário clicar no CTA, também conta como "fechou"
+        const cta = popup.querySelector(".specialist-cta");
+        if (cta) {
+            cta.addEventListener("click", () => {
+                clearTimeout(timer);
+                hidePopup();
+            });
+        }
+
+    })();
+
 });
