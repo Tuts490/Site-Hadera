@@ -717,3 +717,5 @@ function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange,
     })();
 
 });
+
+/* ==================== Desenvolvido por Pedro Pires | pedroop1301@hotmail.com ==================== */
