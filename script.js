@@ -11,114 +11,158 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================
-   FUNÇÃO GENÉRICA DE DRAG
-   Clique limpo → link abre normal.
-   Arraste real  → desliza e suprime clique fantasma.
+   FUNÇÃO GENÉRICA DE DRAG — versão fluida
+   - Inércia após soltar
+   - Snap considera velocidade
+   - Clique limpo → link abre normal
 ========================================== */
 
-    function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange, onUserDrag }) {
+function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange, onUserDrag }) {
 
-        let isDown = false;
-        let didDrag = false;
-        let startX = 0;
-        let startTranslate = 0;
-        let lastTranslate = 0;
+    let isDown = false;
+    let didDrag = false;
+    let startX = 0;
+    let startTime = 0;
+    let startTranslate = 0;
+    let lastTranslate = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let velocity = 0;         // px/ms
+    let rafId = null;
 
-        function getTranslate() {
-            const tr = window.getComputedStyle(track).transform;
-            if (!tr || tr === "none") return 0;
-            const m = tr.match(/matrix\(([^)]+)\)/);
-            return m ? parseFloat(m[1].split(",")[4]) || 0 : 0;
-        }
-
-        function onMove(e) {
-            if (!isDown) return;
-
-            const diff = e.clientX - startX;
-
-            // Só considera drag depois de 10px
-            if (!didDrag) {
-                if (Math.abs(diff) < 10) return;
-                didDrag = true;
-                track.style.transition = "none";
-            }
-
-            let next = startTranslate + diff;
-
-            const minT = -getMaxIndex() * getStep();
-            const maxT = 0;
-
-            if (next > maxT) {
-                next = maxT + (next - maxT) * 0.35;
-            } else if (next < minT) {
-                next = minT + (next - minT) * 0.35;
-            }
-
-            lastTranslate = next;
-            track.style.transform = `translateX(${next}px)`;
-        }
-
-        function onUp() {
-            if (!isDown) return;
-            isDown = false;
-
-            document.removeEventListener("pointermove", onMove);
-            document.removeEventListener("pointerup", onUp);
-            document.removeEventListener("pointercancel", onUp);
-
-            // Clique limpo: não faz nada, deixa o link funcionar
-            if (!didDrag) {
-                didDrag = false;
-                return;
-            }
-
-            didDrag = false;
-
-            const step = getStep();
-            const diff = lastTranslate - startTranslate;
-            const steps = Math.round(-diff / step);
-
-            let newIndex = getIndex() + steps;
-            newIndex = Math.max(0, Math.min(getMaxIndex(), newIndex));
-
-            setIndex(newIndex);
-            track.style.transition = "";
-            onChange();
-
-            if (onUserDrag) onUserDrag();
-
-            // Suprime o próximo clique (que o navegador dispara após o arraste)
-            const suppressClick = (ev) => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                ev.stopImmediatePropagation();
-            };
-
-            track.addEventListener("click", suppressClick, { capture: true, once: true });
-
-            // Failsafe: se o clique nunca vier, remove o listener depois
-            setTimeout(() => {
-                track.removeEventListener("click", suppressClick, { capture: true });
-            }, 350);
-        }
-
-        track.addEventListener("pointerdown", (e) => {
-            if (e.pointerType === "mouse" && e.button !== 0) return;
-
-            isDown = true;
-            didDrag = false;
-            startX = e.clientX;
-            startTranslate = getTranslate();
-            lastTranslate = startTranslate;
-
-            document.addEventListener("pointermove", onMove);
-            document.addEventListener("pointerup", onUp);
-            document.addEventListener("pointercancel", onUp);
-        });
-
-        // Bloqueia o drag nativo do navegador em links/imagens
-        track.addEventListener("dragstart", (e) => e.preventDefault());
+    function getTranslate() {
+        const tr = window.getComputedStyle(track).transform;
+        if (!tr || tr === "none") return 0;
+        const m = tr.match(/matrix\(([^)]+)\)/);
+        return m ? parseFloat(m[1].split(",")[4]) || 0 : 0;
     }
+
+    function clampTranslate(value) {
+        const minT = -getMaxIndex() * getStep();
+        const maxT = 0;
+
+        if (value > maxT) {
+            return maxT + (value - maxT) * 0.35;   // efeito borracha à esquerda
+        }
+        if (value < minT) {
+            return minT + (value - minT) * 0.35;   // efeito borracha à direita
+        }
+        return value;
+    }
+
+    function applyTranslate(value) {
+        track.style.transform = `translateX(${value}px)`;
+        lastTranslate = value;
+    }
+
+    function onMove(e) {
+        if (!isDown) return;
+
+        const now = performance.now();
+        const diff = e.clientX - startX;
+
+        // Considera drag só depois de 6px (mais sensível)
+        if (!didDrag) {
+            if (Math.abs(diff) < 6) return;
+            didDrag = true;
+            track.style.transition = "none";
+            track.classList.add("dragging");
+            if (onUserDrag) onUserDrag();
+        }
+
+        // Calcula velocidade instantânea (para o snap + inércia)
+        const dt = now - lastTime;
+        if (dt > 0) {
+            velocity = (e.clientX - lastX) / dt;
+        }
+        lastX = e.clientX;
+        lastTime = now;
+
+        const next = clampTranslate(startTranslate + diff);
+
+        // Usa requestAnimationFrame para suavizar
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => applyTranslate(next));
+    }
+
+    function onUp() {
+        if (!isDown) return;
+        isDown = false;
+
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
+
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+
+        track.classList.remove("dragging");
+
+        // Clique limpo: não faz snap, deixa o link funcionar
+        if (!didDrag) {
+            didDrag = false;
+            return;
+        }
+
+        didDrag = false;
+
+        const step = getStep();
+        const diff = lastTranslate - startTranslate;
+
+        // Combina distância + velocidade para decidir o índice
+        // Se a velocidade for alta (>0.5 px/ms), considera 1 card extra
+        let steps = Math.round(-diff / step);
+        if (velocity < -0.5) steps += 1;      // arrastou rápido pra esquerda
+        if (velocity > 0.5) steps -= 1;       // arrastou rápido pra direita
+
+        let newIndex = getIndex() + steps;
+        newIndex = Math.max(0, Math.min(getMaxIndex(), newIndex));
+
+        setIndex(newIndex);
+
+        // Aplica transição CSS e snap
+        track.style.transition = "";
+        onChange();
+
+        // Suprime o clique fantasma pós-arraste
+        const suppressClick = (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            ev.stopImmediatePropagation();
+        };
+        track.addEventListener("click", suppressClick, { capture: true, once: true });
+
+        setTimeout(() => {
+            track.removeEventListener("click", suppressClick, { capture: true });
+        }, 350);
+
+        // Reset da velocidade
+        velocity = 0;
+    }
+
+    track.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+
+        isDown = true;
+        didDrag = false;
+        startX = e.clientX;
+        startTime = performance.now();
+        startTranslate = getTranslate();
+        lastTranslate = startTranslate;
+        lastX = e.clientX;
+        lastTime = startTime;
+        velocity = 0;
+
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+        document.addEventListener("pointercancel", onUp);
+    });
+
+    // Bloqueia drag nativo do navegador em imagens/links
+    track.addEventListener("dragstart", (e) => e.preventDefault());
+}
 
     /* ==========================================
    AUTOPLAY DOS CARROSSÉIS
@@ -558,8 +602,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* ==========================================
    POPUP FALE COM ESPECIALISTA
-   Aparece depois de 8s, só uma vez por sessão
-   (o "fechar" fica salvo por 24 horas).
+   - Aparece apenas em horário comercial
+   - Segunda a sexta, das 09h às 18h
+   - Uma vez por sessão (24h de memória)
 ========================================== */
 
     (function () {
@@ -568,6 +613,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const closeBtn = document.getElementById("specialist-close");
 
         if (!popup || !closeBtn) return;
+
+        // ---- Verificação de horário comercial ----
+        const agora = new Date();
+        const diaSemana = agora.getDay();  // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+        const hora = agora.getHours();
+
+        const isDiaUtil = diaSemana >= 1 && diaSemana <= 5;
+        const isHorarioComercial = hora >= 9 && hora < 18;
+
+        if (!isDiaUtil || !isHorarioComercial) return;
+        // ------------------------------------------
 
         const STORAGE_KEY = "hadera_specialist_dismissed";
         const DELAY = 8000;              // 8 segundos
@@ -610,6 +666,53 @@ document.addEventListener("DOMContentLoaded", () => {
                 hidePopup();
             });
         }
+
+    })();
+
+    /* ==========================================
+   AVISO DE COOKIES (LGPD)
+   - Aparece 1,5s depois do carregamento
+   - Guarda a escolha por 6 meses
+========================================== */
+
+    (function () {
+
+        const banner = document.getElementById("cookie-banner");
+        const acceptBtn = document.getElementById("cookie-accept");
+        const rejectBtn = document.getElementById("cookie-reject");
+
+        if (!banner || !acceptBtn || !rejectBtn) return;
+
+        const STORAGE_KEY = "hadera_cookie_consent";
+        const DISMISS_DAYS = 180;   // 6 meses
+
+        // Se já escolheu antes, não mostra
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                const daysSince = (Date.now() - data.date) / (1000 * 60 * 60 * 24);
+                if (daysSince < DISMISS_DAYS) return;
+            } catch (e) {
+                // Se der erro no parse, mostra de novo
+            }
+        }
+
+        function saveConsent(value) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                choice: value,
+                date: Date.now()
+            }));
+            banner.classList.remove("visible");
+        }
+
+        // Mostra depois de 1,5s
+        setTimeout(() => {
+            banner.classList.add("visible");
+        }, 1500);
+
+        acceptBtn.addEventListener("click", () => saveConsent("accepted"));
+        rejectBtn.addEventListener("click", () => saveConsent("rejected"));
 
     })();
 

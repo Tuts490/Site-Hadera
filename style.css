@@ -1916,19 +1916,36 @@ textarea:focus-visible {
 }
 
 /* ============================================================
-   DRAG NOS CARROSSÉIS
+   DRAG NOS CARROSSÉIS — OTIMIZADO
    ============================================================ */
 
 .reviews-track,
 .insurance-track {
     cursor: grab;
+
+    /* Impede seleção de texto durante o drag */
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+
+    /* Permite scroll vertical da página, mas libera o horizontal pro JS */
     touch-action: pan-y;
+
+    /* Otimização: avisa o navegador que o track vai mudar de posição */
+    will-change: transform;
+
+    /* Transição suave para o snap */
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Impede arrastar imagens como arquivo */
+/* Durante o drag: cursor muda + sem transição (segue o dedo/mouse na hora) */
+.reviews-track.dragging,
+.insurance-track.dragging {
+    cursor: grabbing;
+    transition: none !important;
+}
+
+/* Impede arrastar imagens como se fossem arquivos */
 .review-card img,
 .insurance-card img {
     -webkit-user-drag: none;
@@ -2294,7 +2311,7 @@ textarea:focus-visible {
     pointer-events: none;
 
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .specialist-popup.visible {
@@ -2379,8 +2396,13 @@ textarea:focus-visible {
 }
 
 @keyframes pulse-dot {
-    0%   { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.5); }
-    100% { box-shadow: 0 0 0 8px rgba(39, 174, 96, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 0 0 8px rgba(39, 174, 96, 0);
+    }
 }
 
 
@@ -2485,7 +2507,129 @@ textarea:focus-visible {
     .specialist-popup {
         transition: none;
     }
+
     .specialist-status .dot {
         animation: none;
+    }
+}
+
+/* ============================================================
+   AVISO DE COOKIES (LGPD)
+   ============================================================ */
+
+.cookie-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+
+    background: var(--ink);
+    color: var(--white);
+
+    padding: 18px 0;
+
+    /* Estado inicial: escondido para baixo */
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cookie-banner.visible {
+    transform: translateY(0);
+}
+
+.cookie-content {
+    width: min(92%, var(--container));
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.cookie-content p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    max-width: 720px;
+}
+
+.cookie-content p a {
+    color: var(--white);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.4);
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--ease);
+}
+
+.cookie-content p a:hover {
+    text-decoration-color: var(--white);
+}
+
+.cookie-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cookie-btn {
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: var(--ease);
+    white-space: nowrap;
+}
+
+.cookie-btn-primary {
+    background: var(--red);
+    color: var(--white);
+}
+
+.cookie-btn-primary:hover {
+    background: var(--red-dark);
+    transform: translateY(-1px);
+}
+
+.cookie-btn-secondary {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.cookie-btn-secondary:hover {
+    border-color: var(--white);
+    color: var(--white);
+}
+
+@media (max-width: 700px) {
+    .cookie-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .cookie-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .cookie-content p {
+        font-size: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cookie-banner {
+        transition: none;
     }
 }
