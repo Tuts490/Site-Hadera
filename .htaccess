@@ -1,0 +1,64 @@
+# ============================================
+# HADERA CORRETORA — .htaccess
+# ============================================
+
+# ---------- URLS AMIGÁVEIS ----------
+# Remove a extensão .html das URLs
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# 1) Se o usuário digitar /index ou /index.html, manda pra raiz
+RewriteCond %{THE_REQUEST} \s/+index(\.html)?[\s?] [NC]
+RewriteRule ^ / [R=301,L]
+
+# 2) Se o usuário digitar algo.html, redireciona pra versão sem .html
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# 3) Se o usuário digitar sem extensão, serve o .html internamente
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
+</IfModule>
+
+
+# ---------- TIPOS MIME CORRETOS ----------
+
+<IfModule mod_mime.c>
+AddType text/css .css
+AddType application/javascript .js
+AddType image/png .png
+AddType image/jpeg .jpg .jpeg
+AddType image/svg+xml .svg
+</IfModule>
+
+
+# ---------- FORÇAR HTTPS ----------
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+
+# ---------- CACHE DO NAVEGADOR ----------
+
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresByType image/jpeg "access plus 1 month"
+ExpiresByType image/png "access plus 1 month"
+ExpiresByType image/svg+xml "access plus 1 month"
+ExpiresByType text/css "access plus 1 month"
+ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+
+# ---------- SEGURANÇA ----------
+
+Options -Indexes
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
