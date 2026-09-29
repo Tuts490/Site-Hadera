@@ -600,12 +600,13 @@ function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange,
         });
     }
 
-    /* ==========================================
-   POPUP FALE COM ESPECIALISTA
-   - Aparece apenas em horário comercial
-   - Segunda a sexta, das 09h às 18h
-   - Uma vez por sessão (24h de memória)
-========================================== */
+        /* ==========================================
+       POPUP FALE COM ESPECIALISTA
+       - Aparece apenas em horário comercial
+       - Segunda a sexta, das 09h às 18h
+       - Usa SEMPRE o horário de Brasília (GMT-3)
+       - Uma vez por sessão (24h de memória)
+    ========================================== */
 
     (function () {
 
@@ -614,16 +615,20 @@ function enableDrag({ track, getIndex, setIndex, getStep, getMaxIndex, onChange,
 
         if (!popup || !closeBtn) return;
 
-        // ---- Verificação de horário comercial ----
+        // ---- Verificação de horário comercial (fuso de Brasília) ----
+        // Calcula o horário de Brasília (UTC-3) independente do fuso do visitante
         const agora = new Date();
-        const diaSemana = agora.getDay();  // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
-        const hora = agora.getHours();
+        const utcMs = agora.getTime() + (agora.getTimezoneOffset() * 60000);
+        const brasilia = new Date(utcMs - (3 * 60 * 60 * 1000));
+
+        const diaSemana = brasilia.getDay();  // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+        const hora = brasilia.getHours();
 
         const isDiaUtil = diaSemana >= 1 && diaSemana <= 5;
         const isHorarioComercial = hora >= 9 && hora < 18;
 
         if (!isDiaUtil || !isHorarioComercial) return;
-        // ------------------------------------------
+        // ------------------------------------------------------------
 
         const STORAGE_KEY = "hadera_specialist_dismissed";
         const DELAY = 8000;              // 8 segundos
